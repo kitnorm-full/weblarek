@@ -41,6 +41,12 @@ console.log("Есть ли товар в корзине:", cart.hasProduct(first
 cart.removeProduct(firstProduct.id);
 console.log("Корзина после удаления:", cart.getItems());
 
+cart.addProduct(firstProduct);
+console.log("Корзина перед очисткой:", cart.getItems());
+
+cart.clear();
+console.log("Корзина после полной очистки:", cart.getItems());
+
 //Проверка OrderData
 
 const orderData = new OrderData();

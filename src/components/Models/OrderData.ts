@@ -44,7 +44,15 @@ export class OrderData {
     this.email = "";
   }
 
-  validate() {
+  validate(): {
+    isValid: boolean;
+    errors: {
+      payment?: string;
+      address?: string;
+      phone?: string;
+      email?: string;
+    };
+  } {
     const errors: {
       payment?: string;
       address?: string;
