@@ -1,4 +1,5 @@
 import { IBuyer, TPayment } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class OrderData {
   private payment: TPayment;
@@ -6,7 +7,7 @@ export class OrderData {
   private phone: string;
   private email: string;
 
-  constructor() {
+  constructor(protected events: IEvents) {
     this.payment = "";
     this.address = "";
     this.phone = "";
@@ -26,6 +27,7 @@ export class OrderData {
     if (data.email !== undefined) {
       this.email = data.email;
     }
+    this.events.emit('order:changed');
   }
 
   getData(): IBuyer {
@@ -42,6 +44,7 @@ export class OrderData {
     this.address = "";
     this.phone = "";
     this.email = "";
+    this.events.emit('order:changed');
   }
 
   validate(): {
@@ -74,6 +77,8 @@ export class OrderData {
 
     if (!this.email) {
       errors.email = "Email не заполнен";
+    } else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(this.email)) {
+      errors.email = "Введите корректный email";
     }
 
     return {

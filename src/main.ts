@@ -1,78 +1,79 @@
 import "./scss/styles.scss";
-import { apiProducts } from "./utils/data";
 import { ProductList } from "./components/Models/ProductList";
 import { Cart } from "./components/Models/Cart";
 import { OrderData } from "./components/Models/OrderData";
 import { Api } from "./components/base/Api";
 import { WebLarekApi } from "./components/Models/WebLarekApi";
+import { EventEmitter } from "./components/base/Events";
 import { IProductsResponse } from "./types";
 import { API_URL } from "./utils/constants";
+import { ensureElement, cloneTemplate } from "./utils/utils";
+
+import { Header } from "./components/views/Header";
+import { Modal } from "./components/views/Modal";
+import { Gallery } from "./components/views/Gallery";
+import { Basket } from "./components/views/Basket";
+import { OrderForm } from "./components/views/Form/OrderForm";
+import { ContactsForm } from "./components/views/Form/ContactsForm";
+import { Success } from "./components/views/Success";
+import { Presenter } from "./components/Presenter";
+
+const events = new EventEmitter();
 
 const api = new Api(API_URL);
 const webLarekApi = new WebLarekApi(api);
 
-//Проверка ProductList
+const productList = new ProductList(events);
+const cart = new Cart(events);
+const orderData = new OrderData(events);
 
-const productList = new ProductList();
-productList.setProducts(apiProducts.items);
+const header = new Header(ensureElement<HTMLElement>('.header'), events);
+const modal = new Modal(ensureElement<HTMLElement>('.modal'), events);
+const gallery = new Gallery(ensureElement<HTMLElement>('.gallery'));
 
-console.log("Массив товаров из каталога:", productList.getProducts());
+const basket = new Basket(cloneTemplate(ensureElement<HTMLTemplateElement>('#basket')), {
+  onSubmit: () => events.emit('order:open'),
+});
 
-const firstProduct = productList.getProducts()[0];
-productList.setSelectedProduct(firstProduct);
+const orderForm = new OrderForm(cloneTemplate(ensureElement<HTMLTemplateElement>('#order')), {
+  onInput: (field, value) => events.emit('order:input', { field, value }),
+  onSubmit: () => events.emit('order:submit'),
+  onPaymentSelect: (payment) => events.emit('order:paymentSelect', { payment }),
+});
 
-console.log("Выбранный товар:", productList.getSelectedProduct());
+const contactsForm = new ContactsForm(cloneTemplate(ensureElement<HTMLTemplateElement>('#contacts')), {
+  onInput: (field, value) => events.emit('contacts:input', { field, value }),
+  onSubmit: () => events.emit('contacts:submit'),
+});
 
-console.log("Товар по id:", productList.getProductById(firstProduct.id));
+const success = new Success(cloneTemplate(ensureElement<HTMLTemplateElement>('#success')), events);
 
-//Проверка Cart
+const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
+const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
+const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 
-const cart = new Cart();
-
-cart.addProduct(firstProduct);
-console.log("Товары в корзине:", cart.getItems());
-
-console.log("Количество товаров в корзине:", cart.getCount());
-
-console.log("Общая сумма товаров:", cart.getTotal());
-
-console.log("Есть ли товар в корзине:", cart.hasProduct(firstProduct.id));
-
-cart.removeProduct(firstProduct.id);
-console.log("Корзина после удаления:", cart.getItems());
-
-cart.addProduct(firstProduct);
-console.log("Корзина перед очисткой:", cart.getItems());
-
-cart.clear();
-console.log("Корзина после полной очистки:", cart.getItems());
-
-//Проверка OrderData
-
-const orderData = new OrderData();
-
-orderData.setData({ address: "Москва" });
-orderData.setData({ email: "test@mail.com" });
-
-console.log("Данные покупателя:", orderData.getData());
-
-const validationResult = orderData.validate();
-console.log("Результат валидации:", validationResult);
-
-orderData.clear();
-console.log("Данные после очистки:", orderData.getData());
+new Presenter(
+  events,
+  productList,
+  cart,
+  orderData,
+  webLarekApi,
+  header,
+  modal,
+  gallery,
+  basket,
+  orderForm,
+  contactsForm,
+  success,
+  cardCatalogTemplate,
+  cardPreviewTemplate,
+  cardBasketTemplate,
+);
 
 webLarekApi
   .getProducts()
   .then((response: IProductsResponse) => {
-    console.log("Каталог товаров, полученный с сервера:", response.items);
-
     productList.setProducts(response.items);
-
-    console.log(
-      "Каталог товаров, сохранённый в модели:",
-      productList.getProducts(),
-    );
   })
   .catch((error: unknown) => {
     console.error("Ошибка при выполнении запроса к серверу:", error);
