@@ -1,8 +1,8 @@
 import { IEvents } from './base/Events';
-import { ProductList } from './Models/ProductList';
-import { Cart } from './Models/Cart';
-import { OrderData } from './Models/OrderData';
-import { WebLarekApi } from './Models/WebLarekApi';
+import { ProductList } from './models/ProductList';
+import { Cart } from './models/Cart';
+import { OrderData } from './models/OrderData';
+import { WebLarekApi } from './models/WebLarekApi';
 import { Header } from './views/Header';
 import { Modal } from './views/Modal';
 import { Gallery } from './views/Gallery';

@@ -1,9 +1,9 @@
 import "./scss/styles.scss";
-import { ProductList } from "./components/Models/ProductList";
-import { Cart } from "./components/Models/Cart";
-import { OrderData } from "./components/Models/OrderData";
+import { ProductList } from "./components/models/ProductList";
+import { Cart } from "./components/models/Cart";
+import { OrderData } from "./components/models/OrderData";
 import { Api } from "./components/base/Api";
-import { WebLarekApi } from "./components/Models/WebLarekApi";
+import { WebLarekApi } from "./components/models/WebLarekApi";
 import { EventEmitter } from "./components/base/Events";
 import { IProductsResponse } from "./types";
 import { API_URL } from "./utils/constants";
