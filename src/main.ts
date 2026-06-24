@@ -17,6 +17,9 @@ import { OrderForm } from "./components/views/Form/OrderForm";
 import { ContactsForm } from "./components/views/Form/ContactsForm";
 import { Success } from "./components/views/Success";
 import { Presenter } from "./components/Presenter";
+import { CardCatalog } from "./components/views/Card/CardCatalog";
+import { CardPreview } from "./components/views/Card/CardPreview";
+import { CardBasket } from "./components/views/Card/CardBasket";
 
 const events = new EventEmitter();
 
@@ -49,8 +52,11 @@ const contactsForm = new ContactsForm(cloneTemplate(ensureElement<HTMLTemplateEl
 const success = new Success(cloneTemplate(ensureElement<HTMLTemplateElement>('#success')), events);
 
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
-const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
+const cardPreview = new CardPreview(
+  cloneTemplate(ensureElement<HTMLTemplateElement>('#card-preview')),
+  { onButtonClick: () => events.emit('card:toggleBasket') }
+);
 
 new Presenter(
   events,
@@ -65,9 +71,9 @@ new Presenter(
   orderForm,
   contactsForm,
   success,
-  cardCatalogTemplate,
-  cardPreviewTemplate,
-  cardBasketTemplate,
+  (actions) => new CardCatalog(cloneTemplate(cardCatalogTemplate), actions),
+  cardPreview,
+  (actions) => new CardBasket(cloneTemplate(cardBasketTemplate), actions),
 );
 
 webLarekApi

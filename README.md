@@ -118,6 +118,32 @@ Presenter - презентер содержит основную логику п
 `phone: string` — номер телефона покупателя;
 `address: string` — адрес доставки.
 
+#### Интерфейс IProductList
+Описывает контракт модели каталога товаров для инверсии зависимостей.
+
+`getProducts(): IProduct[]` — получение массива товаров;
+`getSelectedProduct(): IProduct | null` — получение выбранного товара;
+`setSelectedProduct(product: IProduct): void` — сохранение выбранного товара.
+
+#### Интерфейс ICart
+Описывает контракт модели корзины для инверсии зависимостей.
+
+`getItems(): IProduct[]` — получение массива товаров в корзине;
+`getCount(): number` — получение количества товаров;
+`getTotal(): number` — получение итоговой суммы;
+`hasProduct(id: string): boolean` — проверка наличия товара;
+`addProduct(product: IProduct): void` — добавление товара;
+`removeProduct(id: string): void` — удаление товара;
+`clear(): void` — очистка корзины.
+
+#### Интерфейс IOrderData
+Описывает контракт модели данных покупателя для инверсии зависимостей.
+
+`getData(): IBuyer` — получение данных покупателя;
+`setData(data: Partial<IBuyer>): void` — сохранение данных покупателя;
+`validate()` — валидация данных покупателя;
+`clear(): void` — очистка данных покупателя.
+
 ### Модели данных
 
 #### Класс ProductList
@@ -197,10 +223,34 @@ Presenter - презентер содержит основную логику п
 `api: IApi` — объект для выполнения HTTP-запросов к серверу.
 
 Методы:
-`getProducts(): Promise<IProduct[]>` - выполняет GET-запрос на эндпоинт /product/ и возвращает массив товаров;
+`getProducts(): Promise<IProductsResponse>` - выполняет GET-запрос на эндпоинт /product/ и возвращает массив товаров;
 `createOrder(data: IOrderRequest): Promise<IOrderResponse>` - выполняет POST-запрос на эндпоинт /order/ и отправляет данные заказа на сервер.
 
+#### Интерфейс IWebLarekApi
+Описывает контракт слоя коммуникации с сервером для инверсии зависимостей.
+
+`getProducts(): Promise<IProductsResponse>` — запрос каталога товаров;
+`createOrder(data: IOrderRequest): Promise<IOrderResponse>` — отправка заказа на сервер.
+
 ### Представление (View)
+
+#### Интерфейсы View-компонентов
+Используются Presenter для инверсии зависимостей. Каждый интерфейс описывает минимальный контракт компонента — метод `render` с конкретными данными, а также `open()`/`close()` там где нужно.
+
+`IHeader` — контракт шапки сайта;
+`IModal` — контракт модального окна (`render`, `open`, `close`);
+`IGallery` — контракт каталога;
+`IBasket` — контракт корзины;
+`IOrderForm` — контракт формы оплаты и адреса;
+`IContactsForm` — контракт формы контактов;
+`ISuccess` — контракт окна успеха;
+`ICardPreview` — контракт карточки превью товара.
+
+#### Тип TCardCatalogFactory
+Фабричная функция для создания карточек каталога. Принимает `ICardCatalogActions` (объект с `onClick`) и возвращает `ICardCatalog`.
+
+#### Тип TCardBasketFactory
+Фабричная функция для создания карточек корзины. Принимает `ICardBasketActions` (объект с `onDeleteClick`) и возвращает `ICardBasket`.
 
 #### Класс Header
 Отвечает за отображение шапки сайта.
@@ -245,7 +295,7 @@ Presenter - презентер содержит основную логику п
 Отсутствуют.
 
 Методы:
-`set catalog(items: HTMLElement[]): void` — каталога карточек.
+`set catalog(items: HTMLElement[]): void` — каталог карточек.
 
 #### Класс Card (абстрактный родитель)
 Общий родитель для трёх вариантов отображения карточки товара.
@@ -279,10 +329,10 @@ Presenter - презентер содержит основную логику п
 
 #### Класс CardPreview (наследник Card)
 Отображение карточки товара в модальном окне.
-Является дженериком `Component<TCardPreviewData>`, где `TCardPreviewData = Pick<IProduct, 'title' | 'price' | 'image' | 'category' | 'description'> & { inBasket: boolean }`.
+Является дженериком `Component<TCardPreviewData>`, где `TCardPreviewData = Pick<IProduct, 'title' | 'price' | 'image' | 'category' | 'description'> & { buttonText: string; buttonDisabled: boolean }`.
 
 Конструктор:
-`constructor(container: HTMLElement, actions?: ICardPreviewActions)` — принимает корневой DOM-элемент карточки и опциональный объект с обработчиком клика по кнопке "Купить" и "Удалить из корзины".
+`constructor(container: HTMLElement, actions?: ICardPreviewActions)` — принимает корневой DOM-элемент карточки и опциональный объект с обработчиком клика по кнопке.
 
 Поля:
 `imageElement: HTMLImageElement` — изображение товара;
@@ -294,8 +344,8 @@ Presenter - презентер содержит основную логику п
 `set image(value: string): void` — устанавливает изображение;
 `set category(value: string): void` — устанавливает текст категории;
 `set description(value: string): void` — устанавливает текст описания;
-`set price(value: number | null): void` — переопределяет родительский сеттер. Если null, блокирует кнопку и устанавливает текст «Недоступно»;
-`set inBasket(value: boolean): void` — переключает текст кнопки между "Купить" и "Удалить из корзины".
+`set buttonText(value: string): void` — устанавливает текст кнопки;
+`set buttonDisabled(value: boolean): void` — блокирует или разблокирует кнопку.
 
 #### Класс CardBasket (наследник Card)
 Отображение товара строкой внутри корзины.
@@ -402,7 +452,7 @@ Presenter - презентер содержит основную логику п
 `basket:open` — клик по корзине в шапке;
 `modal:close` — закрытие модального окна;
 `card:select` (товар) — клик по карточке в каталоге;
-`card:toggleBasket` (товар) — клик "Купить" / "Удалить из корзины";
+`card:toggleBasket` — клик "Купить" / "Удалить из корзины";
 `card:remove` (id) — удаление товара из корзины;
 `order:open` — клик "Оформить";
 `order:input` (поле, значение) — ввод в форме оплаты/адреса;
@@ -413,7 +463,7 @@ Presenter - презентер содержит основную логику п
 
 ### Презентер
 
-Презентер реализован отдельным классом `Presenter`. Презентер не создаёт зависимости самостоятельно — все модели, компоненты представления и брокер событий передаются в его конструктор извне. Все объекты создаются и связываются между собой в `main.ts`(точка сборки)
+Презентер реализован отдельным классом `Presenter`. Использует инверсию зависимостей. Карточки каталога и корзины создаются через фабричные функции (`TCardCatalogFactory`, `TCardBasketFactory`). Все объекты создаются и связываются между собой в `main.ts`(точка сборки)
 
 Презентер только подписывается на события (`events.on`) — он не генерирует события самостоятельно. Каждый обработчик реализует один из двух сценариев:
 - вызывает метод модели для изменения данных (в ответ на действие пользователя, пришедшее от View);
