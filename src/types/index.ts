@@ -93,7 +93,7 @@ export interface ICardCatalog {
 export type TCardCatalogFactory = (actions: ICardCatalogActions) => ICardCatalog;
 
 export interface ICardPreview {
-  render(data: {
+  render(data?: {
     title: string;
     price: number | null;
     image: string;
