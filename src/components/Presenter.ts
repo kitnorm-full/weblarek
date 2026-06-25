@@ -40,6 +40,7 @@ export class Presenter {
   ) {
     this.events.on("catalog:changed", this.handleCatalogChanged);
     this.events.on("card:select", this.handleCardSelect);
+    this.events.on('preview:changed', this.handlePreviewChanged);
     this.events.on("card:toggleBasket", this.handleToggleBasket);
     this.events.on("card:remove", this.handleCardRemove);
     this.events.on("cart:changed", this.handleCartChanged);
@@ -72,8 +73,12 @@ export class Presenter {
 
   private handleCardSelect = (item: IProduct): void => {
     this.productList.setSelectedProduct(item);
+  };
+
+  private handlePreviewChanged = (): void => {
+    const item = this.productList.getSelectedProduct();
+    if (!item) return;
     this.openPreview(item);
-    this.modal.open();
   };
 
   private updatePreview(item: IProduct): void {
@@ -147,7 +152,7 @@ export class Presenter {
   }
 
   private handleOrderOpen = (): void => {
-    this.modal.render({ content: this.refreshOrderForm() });
+    this.modal.render({ content: this.orderForm.render() });
     this.modal.open();
   };
 
@@ -175,7 +180,7 @@ export class Presenter {
   };
 
   private handleOrderSubmit = (): void => {
-    this.modal.render({ content: this.refreshContactsForm() });
+    this.modal.render({ content: this.contactsForm.render() });
   };
 
   private refreshContactsForm(): HTMLElement {

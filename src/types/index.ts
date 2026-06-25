@@ -123,11 +123,11 @@ export interface IBasket {
 }
 
 export interface IOrderForm {
-  render(data: { payment: TPayment; address: string; valid: boolean; errors: string }): HTMLElement;
+  render(data?: { payment: TPayment; address: string; valid: boolean; errors: string }): HTMLElement;
 }
 
 export interface IContactsForm {
-  render(data: { email: string; phone: string; valid: boolean; errors: string }): HTMLElement;
+  render(data?: { email: string; phone: string; valid: boolean; errors: string }): HTMLElement;
 }
 
 export interface ISuccess {
